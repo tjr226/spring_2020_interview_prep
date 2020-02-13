@@ -8,6 +8,12 @@ class SinglyLinkedListNode:
         self.data = data
         self.next = next
 
+class DoublyLinkedListNode:
+    def __init__(self, data, prev=None, next=None):
+        self.data = data
+        self.prev = prev
+        self.next = next
+
 # 001
 
 # Print the elements of a linked list
@@ -145,7 +151,7 @@ def reversePrint(head):
 # Reverse a linked list
 # https://www.hackerrank.com/challenges/reverse-a-linked-list/problem
 
-def reverse(head):
+def reverseSinglyLinkedList(head):
     newList = SinglyLinkedListNode(head.data)
 
     while head.next:
@@ -266,4 +272,149 @@ def removeDuplicates(head):
 
 # 011
 
+# Find merge point of two linked lists
+# https://www.hackerrank.com/challenges/find-the-merge-point-of-two-joined-linked-lists/problem
 
+
+# Initial working code
+# Big mistake - using "while head1.next" means that I was skipping comparing the last head1 node
+# Added second while loop to make that comparison
+# Avoided this bug for head2 by incrementing it after the while statement
+
+'''
+
+def findMergeNode(head1, head2):
+    initialHead1 = head1
+    initialHead2 = head2
+
+    while head1.next:
+        while head2.next:
+            head2 = head2.next
+            if compare_lists(head1, head2) == 1:
+                return head1.data
+
+        head2 = initialHead2
+        head1 = head1.next
+
+    # did not add this WHILE loop in initial code
+    # caused bug where algo wouldn't find merged lists
+    # if merge point was at last node in head1 linked list
+    while head2.next:
+        head2 = head2.next
+        if compare_lists(head1, head2) == 1:
+            return head1.data
+
+'''
+
+# Cleaned up working code
+
+def findMergeNode(head1, head2):
+    # need to be able to reset head2 linked list
+    initialHead2 = head2
+
+    while head1:
+        # must increment on head2 because merge point cannot be at the input nodes (invariant)
+        # if you don't, chance that data will be same for both input nodes
+        head2 = head2.next
+        
+        while head2:
+            if compare_lists(head1, head2) == 1:
+                return head1.data
+            head2 = head2.next
+
+        head2 = initialHead2
+        head1 = head1.next
+
+
+# 012
+
+# Inserting a Node Into a Sorted Doubly Linked List
+# https://www.hackerrank.com/challenges/insert-a-node-into-a-sorted-doubly-linked-list/problem
+
+# Problems I ran into
+# -must change next, prev pointers of both prev and next nodes
+# -can't auto-return the head like in some previous exercises, in case you insert a node before the head
+# -before adding the last IF statement, couldn't add at end of the list, because only checking if you can insert before a node
+# -need data comparison in last IF statement because if you insert before last node, head will be at end and you'll re-insert after the last node
+
+def sortedInsert(head, data):
+    if head is None:
+        return DoublyLinkedListNode(data)
+
+    while head:
+        if head.data > data:
+            # create new node
+            newHead = DoublyLinkedListNode(data)
+            # set pointers for new node
+            newHead.prev = head.prev
+            newHead.next = head
+            # set next pointer for prev node
+            if head.prev:
+                head.prev.next = newHead
+            # set prev pointer for next node
+            head.prev = newHead
+            break
+        
+        if head.next:
+            head = head.next
+        else:
+            break
+
+    if head.next is None and data >= head.data:
+        newHead = DoublyLinkedListNode(data)
+        head.next = newHead
+        newHead.prev = head
+
+    # return to node at start of modified linked list
+    while head.prev:
+        head = head.prev
+        
+    return head
+
+# 013
+
+# Reverse a doubly linked list
+# https://www.hackerrank.com/challenges/reverse-a-doubly-linked-list/problem
+
+""" First working solution
+
+import copy
+
+def reverseDoublyLinkedList(head):
+    if head is None:
+        return head
+
+    headTracker = copy.copy(head)
+
+    while headTracker:
+
+        headNext = head.next
+        headPrev = head.prev
+        head.next = headPrev
+        head.prev = headNext
+
+        if headTracker.next is None:
+            return head
+
+        head = head.prev
+        headTracker = copy.copy(headTracker.next)
+
+"""
+
+def reverseDoublyLinkedList(head):
+    if head is None:
+        return head
+
+    while True:
+        headNext = head.next
+        headPrev = head.prev
+        head.next = headPrev
+        head.prev = headNext
+
+        if head.prev is None:
+            break
+
+        # key line that enables an in-place approach
+        head = head.prev
+
+    return head
